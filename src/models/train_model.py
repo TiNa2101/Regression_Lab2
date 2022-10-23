@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 import click
 import logging
 import pandas as pd
-import config as cfg
+import src.config as cfg
 
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv

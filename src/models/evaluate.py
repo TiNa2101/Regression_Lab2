@@ -6,7 +6,6 @@ import pandas as pd
 import pickle
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-from src.utils import save_as_pickle, load_pickle
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score, explained_variance_score, max_error
