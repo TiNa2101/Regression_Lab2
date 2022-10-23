@@ -1,28 +1,65 @@
 # -*- coding: utf-8 -*-
 import logging
-from pathlib import Path
-
 import click
-from dotenv import find_dotenv, load_dotenv
-from sklearn.metrics import f1_score
-from src.utils import load_pickle
 import json
+import pandas as pd
+import pickle
+from pathlib import Path
+from dotenv import find_dotenv, load_dotenv
+from src.utils import save_as_pickle, load_pickle
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score, explained_variance_score, max_error
 
 
 @click.command()
-@click.argument('input_pred_filepath', type=click.Path(exists=True))
-@click.argument('input_true_filepath', type=click.Path(exists=True))
-@click.argument('out_metrics_filepath', type=click.Path())
-def main(input_pred_filepath, input_true_filepath, out_metrics_filepath):
+@click.argument('input_data_filepath', type=click.Path(exists=True))
+@click.argument('input_target_filepath', type=click.Path(exists=True))
+@click.argument('model_catboost_filepath', type=click.Path())
+@click.argument('model_sk_linear_filepath', type=click.Path())
+@click.argument('output_metrics_filepath', type=click.Path())
+
+def main(input_data_filepath, input_target_filepath, model_catboost_filepath, model_sk_linear_filepath, output_metrics_filepath):
 
     logger = logging.getLogger(__name__)
     logger.info('model evaluation...')
 
-    pred = load_pickle(input_pred_filepath)
-    true = load_pickle(input_true_filepath)
+    val_data = pd.read_pickle(input_data_filepath)
+    val_target = pd.read_pickle(input_target_filepath)
 
-    metrics = {'f1_score_samples': f1_score(true, pred, average='samples', zero_division=0)}
-    with open(out_metrics_filepath, "w") as f:
+    sk_linear_regression_model = pickle.load(open(model_sk_linear_filepath, 'rb'))
+    catboost_regression_model = pickle.load(open(model_catboost_filepath, 'rb'))
+
+    predict_linear_regression = sk_linear_regression_model.predict(val_data)
+    predict_catboost_regression = catboost_regression_model.predict(val_data)
+
+    linear_mae = mean_absolute_error(val_target, predict_linear_regression)
+    linear_mse = mean_squared_error(val_target, predict_linear_regression)
+    linear_r2 = r2_score(val_target, predict_linear_regression)
+    linear_evs = explained_variance_score(val_target, predict_linear_regression)
+    linear_me = max_error(val_target, predict_linear_regression)
+    
+    catboost_mae = mean_absolute_error(val_target, predict_catboost_regression)
+    catboost_mse = mean_squared_error(val_target, predict_catboost_regression)
+    catboost_r2 = r2_score(val_target, predict_catboost_regression)
+    catboost_evs = explained_variance_score(val_target, predict_catboost_regression)
+    catboost_me = max_error(val_target, predict_catboost_regression)
+
+    metrics = {
+        "Model 1 Name": "CatBoostRegression",
+        "MAE": catboost_mae,
+        "MSE": catboost_mse,
+        "R2": catboost_r2,
+        "Explained Varience Score": catboost_evs,
+        "Max Error": catboost_me,
+        "Model 2 Name": "LinearRegression",
+        "MAE ": linear_mae,
+        "MSE ": linear_mse,
+        "R2 ": linear_r2,
+        "Explained Varience Score ": linear_evs,
+        "Max Error ": linear_me
+    }
+    with open(output_metrics_filepath, "w") as f:
         json.dump(metrics, f)
 
 
