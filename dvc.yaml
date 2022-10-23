@@ -1,0 +1,11 @@
+stages:
+  preprocess_train_data:
+    cmd: python src/data/make_dataset.py data/raw/train.scv data/interim/train.pkl
+      --output_target_filepath data/interim/target.pkl
+    deps:
+    - data/raw/train.csv
+    - src/data/make_dataset.py
+    - src/data/preprocess.py
+    outs:
+    - data/interim/target.pkl
+    - data/interim/train.pkl
