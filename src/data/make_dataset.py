@@ -10,8 +10,8 @@ import pandas as pd
 
 @click.command()
 @click.argument('input_filepath', type=click.Path(exists=True))
-@click.option('--output_data_filepath', type=click.Path())
-@click.option('--output_target_filepath', type=click.Path(), required=False)
+@click.option('output_data_filepath', type=click.Path())
+@click.option('output_target_filepath', type=click.Path(), required=False)
 
 def main(input_filepath, output_data_filepath, output_target_filepath=None):
     """ Runs data processing scripts to turn raw data from (../raw) into
